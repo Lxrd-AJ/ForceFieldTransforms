@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
-import math 
+import math
+import matplotlib.pyplot as plt  
 
 
 def captureImage():
@@ -43,10 +44,13 @@ def imageForceField2(image):
             num = complex(height,width) - complex(y,x)
             den = pow(abs(num),3)
             forces[y,x] = num/den
-    snd = np.fft.fft(forces) * np.fft.fft(image)
-    fst = np.fft.ifft(snd)
+    snd = np.fft.fft2(forces) * np.fft.fft2(image)
+    snd = np.fft.fftshift(snd)
+    fst = np.fft.ifftshift(snd)
+    fst = np.fft.ifft2(snd)
     forces = (math.sqrt(height * width)) * fst
-    forces = np.absolute(forces)
+    forces = np.abs(forces)  
+    # forces = 20 * np.log(forces)
     return forces
 
 def forceFieldFeatureExtraction():
@@ -55,9 +59,13 @@ def forceFieldFeatureExtraction():
 
 if __name__ == "__main__":
     print("Launching webcam ...")
-    #image = captureImage()
-    image = cv2.imread('Ear_1.jpg',0)
-    res = imageForceField(image)
-    cv2.imshow('image', res)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
+    image = captureImage()
+    image = cv2.imread('screen_grab.png',0) #Ear_1.jpg
+    res = imageForceField2(image)
+    print(res)
+    plt.imshow(res, cmap = 'gray', interpolation = 'bicubic')
+    plt.xticks([]), plt.yticks([])  # to hide tick values on X and Y axis
+    plt.show()
+    # cv2.imshow('image', res)
+    # cv2.waitKey(0)
+    # cv2.destroyAllWindows()
