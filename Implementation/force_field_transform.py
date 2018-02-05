@@ -60,8 +60,9 @@ def forceFieldFeatureExtraction():
 if __name__ == "__main__":
     print("Launching webcam ...")
     image = captureImage()
-    image = cv2.imread('screen_grab.png',0) #Ear_1.jpg
+    image = cv2.imread('Screen_grab.png',0) #Ear_1.jpg
     res = imageForceField2(image)
+    res = imageForceField2(res)
     print(res)
     plt.imshow(res, cmap = 'gray', interpolation = 'bicubic')
     plt.xticks([]), plt.yticks([])  # to hide tick values on X and Y axis
