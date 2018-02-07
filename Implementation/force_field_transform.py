@@ -2,6 +2,7 @@ import cv2
 import numpy as np
 import math
 import matplotlib.pyplot as plt  
+import uuid
 
 
 def captureImage():
@@ -55,11 +56,20 @@ def imageForceField2(image):
                 forces[y,x] = 0j
             else: forces[y,x] = num/den
     image = cv2.resize(image, (width*scale,height*scale))
-    forces = np.sqrt(height*width) * np.fft.ifft2( np.fft.fft2(forces) * np.fft.fft2(image)) 
-    forces = np.absolute(forces)
-    print(forces.shape)
+    forces = np.absolute(np.sqrt(height*width) * np.fft.ifft2( np.fft.fft2(forces) * np.fft.fft2(image)))
     forces *= 255.0/forces.max()
     forces = np.uint8(forces)
+
+    #Re-arrange the 4 sections of the image image
+    height, width = forces.shape
+    BR = forces[:int(height/2),:int(width/2)]
+    TR = forces[int(height/2):,:int(width/2)]
+    TL = forces[int(height/2):,int(width/2):]
+    BL = forces[:int(height/2),int(width/2):]
+
+    first_half = np.vstack((TL,BL))
+    second_half = np.vstack((TR, BR))
+    forces = np.hstack((first_half,second_half))
     return forces
 
 def imageForceField3(image):
@@ -116,18 +126,14 @@ def imageForceField4(image):
 
 def stream():
     cap = cv2.VideoCapture(0)
-    frame_count = 1
     while True:
         ret_val, frame = cap.read()
         image = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        image = imageForceField4(image)
-        print("Processed frame", frame_count)
-        frame_count += 1
-        plt.imshow(image, cmap = 'gray', interpolation = 'bicubic')
-        plt.xticks([]), plt.yticks([])  # to hide tick values on X and Y axis
-        plt.show()
-
-        if cv2.waitKey(1) & 0xFF == ord('q'):            
+        image = cv2.resize(image, (300,200))
+        image = imageForceField2(image)
+        cv2.imshow('frame', image)
+        if cv2.waitKey(1) & 0xFF == ord('q'):    
+            out = cv2.imwrite('{:}.png'.format(uuid.uuid4().hex.upper()), image)        
             break
     cap.release()
     cv2.destroyAllWindows()
@@ -137,25 +143,15 @@ def stream():
 if __name__ == "__main__":
     print("Launching webcam ...")
     # image = captureImage()
-    # stream()
+    stream()
 
-    # image = cv2.imread('screen_grab.png',0)
-    image = cv2.imread('Ear_1.png',0) 
-    # height, width = image.shape[:2]
-    # image = cv2.resize(image, (width,height))
-    # cv2.imshow('image', image)
-    # cv2.waitKey(0)
-    # cv2.destroyAllWindows()
-    
-    # cv2.imshow('image',image)
-    res = imageForceField2(image)
-    print(res)
-    cv2.imshow('image', res)
+    # image = cv2.imread('Ear_1.png',0) 
+    # res = imageForceField2(image)
+    # print(res)
+    # cv2.imshow('image', res)
+
     cv2.waitKey(0)
     cv2.destroyAllWindows()
-    
-    # plt.imshow(res, cmap = 'gray', interpolation = 'bicubic')
-    # plt.xticks([]), plt.yticks([])  # to hide tick values on X and Y axis
-    # plt.show()
+
 
     
