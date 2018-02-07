@@ -45,20 +45,21 @@ def imageForceField(image):
 
 def imageForceField2(image):
     height, width = image.shape[:2]
-    forces = np.zeros((height,width),dtype=np.complex_)
-    for y in range(0, height):
-        for x in range(0, width):
+    scale = 2
+    forces = np.zeros((height*scale,width*scale),dtype=np.complex_)
+    for y in range(0, height*scale):
+        for x in range(0, width*scale):
             num = complex(height,width) - complex(y,x)
             den = pow(abs(num),3)
-            forces[y,x] = num/den
-    snd = np.fft.fft2(forces) * np.fft.fft2(image)
-    snd = np.fft.fftshift(snd)
-    fst = np.fft.ifftshift(snd)
-    fst = np.fft.ifft2(snd)
-    forces = (math.sqrt(height * width)) * fst
-    # print(forces)
+            if den==0:
+                forces[y,x] = 0j
+            else: forces[y,x] = num/den
+    image = cv2.resize(image, (width*scale,height*scale))
+    forces = np.sqrt(height*width) * np.fft.ifft2( np.fft.fft2(forces) * np.fft.fft2(image)) 
     forces = np.absolute(forces)
-    # forces = 2 * np.log(forces)
+    print(forces.shape)
+    forces *= 255.0/forces.max()
+    forces = np.uint8(forces)
     return forces
 
 def imageForceField3(image):
@@ -103,27 +104,58 @@ def imageForceField4(image):
             if den==0:
                 upf[rr,cc] = 0j
             else: upf[rr,cc]= num/den
-    inp = cv2.resize(image, (sc,sr), interpolation = cv2.INTER_CUBIC) #TODO: Fix Bug here
+    inp = image 
+    # inp = cv2.resize(image, (sc,sr)) #TODO: Fix Bug here
+    vertical = int((sr - height + 1) / 2)
+    horizontal = int((sc - width + 1) / 2)
+    inp = cv2.copyMakeBorder(image, vertical, vertical, horizontal, horizontal,cv2.BORDER_CONSTANT,value=255)
+
     oup = np.sqrt(height*width) * np.fft.ifft2( np.fft.fft2(upf) * np.fft.fft2(inp))
     return np.absolute(oup) 
             
 
-def forceFieldFeatureExtraction():
-    pass 
+def stream():
+    cap = cv2.VideoCapture(0)
+    frame_count = 1
+    while True:
+        ret_val, frame = cap.read()
+        image = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        image = imageForceField4(image)
+        print("Processed frame", frame_count)
+        frame_count += 1
+        plt.imshow(image, cmap = 'gray', interpolation = 'bicubic')
+        plt.xticks([]), plt.yticks([])  # to hide tick values on X and Y axis
+        plt.show()
+
+        if cv2.waitKey(1) & 0xFF == ord('q'):            
+            break
+    cap.release()
+    cv2.destroyAllWindows()
+    return frame
 
 
 if __name__ == "__main__":
     print("Launching webcam ...")
     # image = captureImage()
-    image = cv2.imread('Ear_1.png',0) #screen_grab.png
-    # cv2.imshow('image',image)
-    res = imageForceField4(image)
-    print(res)
-    
-    plt.imshow(res, cmap = 'gray', interpolation = 'bicubic')
-    plt.xticks([]), plt.yticks([])  # to hide tick values on X and Y axis
-    plt.show()
+    # stream()
 
-    # cv2.imshow('image', res)
+    # image = cv2.imread('screen_grab.png',0)
+    image = cv2.imread('Ear_1.png',0) 
+    # height, width = image.shape[:2]
+    # image = cv2.resize(image, (width,height))
+    # cv2.imshow('image', image)
     # cv2.waitKey(0)
     # cv2.destroyAllWindows()
+    
+    # cv2.imshow('image',image)
+    res = imageForceField2(image)
+    print(res)
+    cv2.imshow('image', res)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
+    
+    # plt.imshow(res, cmap = 'gray', interpolation = 'bicubic')
+    # plt.xticks([]), plt.yticks([])  # to hide tick values on X and Y axis
+    # plt.show()
+
+    
