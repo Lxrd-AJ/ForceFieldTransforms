@@ -129,7 +129,7 @@ def stream():
     while True:
         ret_val, frame = cap.read()
         image = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        image = cv2.resize(image, (300,200))
+        image = cv2.resize(image, (250,150))
         image = imageForceField2(image)
         cv2.imshow('frame', image)
         if cv2.waitKey(1) & 0xFF == ord('q'):    
@@ -145,9 +145,9 @@ if __name__ == "__main__":
     # image = captureImage()
     stream()
 
-    # image = cv2.imread('Ear_1.png',0) 
-    # res = imageForceField2(image)
-    # print(res)
+    image = cv2.imread('Ear_1.png',0) 
+    res = imageForceField2(image)
+    cv2.imwrite('Ear_1_Force.png', res)        
     # cv2.imshow('image', res)
 
     cv2.waitKey(0)
