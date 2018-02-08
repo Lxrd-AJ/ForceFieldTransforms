@@ -72,33 +72,6 @@ def imageForceField2(image):
     forces = np.hstack((first_half,second_half))
     return forces
 
-def imageForceField3(image):
-    height, width = image.shape[:2]
-    sr = 2 * height-1
-    sc = 2 * width-1
-    r = height-1
-    c = width-1
-    t = 3*height-3
-    u = 3*width-3
-
-    upf = np.zeros((t,u),dtype=np.complex_)
-    inp = np.zeros((t,u))
-    for rr in range(0, sr):
-        for cc in range(0, sc):
-            num = complex(r,c) - complex(rr,cc) + 0j
-            den = pow(abs(complex(r,c) - complex(rr,cc)),3)
-            if den==0:
-                upf[rr,cc] = 0j
-            else: upf[rr,cc]= num/den
-
-    for x in range(0, height):
-        for y in range(0, width):
-            inp[x,y]=image[x,y]
-
-    oup = np.sqrt(t*u)*np.fft.ifft2(np.fft.fft2(upf)*np.fft.fft2(inp))
-    # ff = oup[np.ix_([r,2*r],[c,2*c])]
-    ff = oup 
-    return np.absolute(ff)
 
 def imageForceField4(image):
     height, width = image.shape[:2]
@@ -115,7 +88,7 @@ def imageForceField4(image):
                 upf[rr,cc] = 0j
             else: upf[rr,cc]= num/den
     inp = image 
-    # inp = cv2.resize(image, (sc,sr)) #TODO: Fix Bug here
+    inp = cv2.resize(image, (sc,sr)) 
     vertical = int((sr - height + 1) / 2)
     horizontal = int((sc - width + 1) / 2)
     inp = cv2.copyMakeBorder(image, vertical, vertical, horizontal, horizontal,cv2.BORDER_CONSTANT,value=255)
