@@ -147,7 +147,7 @@ if __name__ == "__main__":
 
     image = cv2.imread('Ear_1.png',0) 
     res = imageForceField2(image)
-    cv2.imwrite('Ear_1_Force.png', res)        
+    cv2.imwrite('Ear_Force_1.png', res)  # Ear Force 1 => Air Force one ;)    
     # cv2.imshow('image', res)
 
     cv2.waitKey(0)
